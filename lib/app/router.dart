@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:tracktify/features/auth/landing_screen.dart';
+import 'package:tracktify/features/auth/login_screen.dart';
+import 'package:tracktify/features/auth/sign_up_screen.dart';
 
 // Layar asli: tambahkan import-nya seiring selesai, ganti _Placeholder
 // import '../features/auth/landing_screen.dart';
@@ -50,9 +53,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(path: '/landing', builder: (_, __) => const _Placeholder('Landing')),
-      GoRoute(path: '/login', builder: (_, __) => const _Placeholder('Login')),
-      GoRoute(path: '/signup', builder: (_, __) => const _Placeholder('Sign Up')),
+      GoRoute(path: '/landing', builder: (_, __) => const LandingScreen()),
+      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/signup', builder: (_, __) => const SignUpScreen()),
       GoRoute(path: '/forgot-password', builder: (_, __) => const _Placeholder('Forgot Password')),
       GoRoute(path: '/otp', builder: (_, s) => _Placeholder('OTP ${s.extra ?? ''}')),
       GoRoute(path: '/set-password', builder: (_, __) => const _Placeholder('Set New Password')),
