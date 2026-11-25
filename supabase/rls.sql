@@ -45,3 +45,38 @@ create policy "members update" on project_members for update to authenticated
 -- admin mengeluarkan anggota, atau anggota keluar sendiri (Leave Project)
 create policy "members delete" on project_members for delete to authenticated
   using (is_admin(project_id) or user_id = auth.uid());
+
+-- tasks
+alter table tasks enable row level security;
+create policy "tasks read"   on tasks for select to authenticated using (is_member(project_id));
+create policy "tasks insert" on tasks for insert to authenticated with check (is_admin(project_id));
+create policy "tasks delete" on tasks for delete to authenticated using (is_admin(project_id));
+create policy "tasks update" on tasks for update to authenticated
+  using (
+    is_admin(project_id)
+    or exists (select 1 from task_assignees ta
+               where ta.task_id = tasks.id and ta.user_id = auth.uid())
+  );
+
+-- anggota biasa hanya boleh mengubah kolom status
+create or replace function tasks_member_only_status() returns trigger
+language plpgsql as $$
+begin
+  if not is_admin(old.project_id) then
+    if new.title is distinct from old.title
+       or new.description is distinct from old.description
+       or new.project_id is distinct from old.project_id then
+      raise exception 'HANYA_ADMIN';
+    end if;
+  end if;
+  return new;
+end $$;
+
+create trigger tasks_status_guard before update on tasks
+for each row execute function tasks_member_only_status();
+
+-- task_assignees
+alter table task_assignees enable row level security;
+create policy "assignees read"   on task_assignees for select to authenticated using (is_member(project_id));
+create policy "assignees insert" on task_assignees for insert to authenticated with check (is_admin(project_id));
+create policy "assignees delete" on task_assignees for delete to authenticated using (is_admin(project_id));

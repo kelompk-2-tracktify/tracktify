@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aacf14b9-aa38-4f09-97fd-b3779e269586" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/supabase/rls.sql" beforeDir="false" afterPath="$PROJECT_DIR$/supabase/rls.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
