@@ -5,12 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="aacf14b9-aa38-4f09-97fd-b3779e269586" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/supabase_config.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/supabase_config.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/supabase/rls.sql" beforeDir="false" afterPath="$PROJECT_DIR$/supabase/rls.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tracktify.iml" beforeDir="false" afterPath="$PROJECT_DIR$/tracktify.iml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
