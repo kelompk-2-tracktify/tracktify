@@ -80,3 +80,22 @@ alter table task_assignees enable row level security;
 create policy "assignees read"   on task_assignees for select to authenticated using (is_member(project_id));
 create policy "assignees insert" on task_assignees for insert to authenticated with check (is_admin(project_id));
 create policy "assignees delete" on task_assignees for delete to authenticated using (is_admin(project_id));
+
+-- join_requests: membuat request HANYA lewat fungsi send_join_request
+alter table join_requests enable row level security;
+create policy "requests read" on join_requests for select to authenticated
+  using (user_id = auth.uid() or is_admin(project_id));
+create policy "requests admin update" on join_requests for update to authenticated
+  using (is_admin(project_id));
+create policy "requests cancel" on join_requests for delete to authenticated
+  using (user_id = auth.uid() and status = 'pending');
+
+-- project_invitations
+alter table project_invitations enable row level security;
+create policy "invites read" on project_invitations for select to authenticated
+  using (is_admin(project_id)
+         or lower(invited_email) = lower(auth.jwt() ->> 'email'));
+create policy "invites insert" on project_invitations for insert to authenticated
+  with check (is_admin(project_id));
+create policy "invites delete" on project_invitations for delete to authenticated
+  using (is_admin(project_id));
