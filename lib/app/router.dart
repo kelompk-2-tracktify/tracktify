@@ -6,6 +6,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tracktify/features/auth/landing_screen.dart';
 import 'package:tracktify/features/auth/login_screen.dart';
 import 'package:tracktify/features/auth/sign_up_screen.dart';
+import 'package:tracktify/features/task_list/task_list_screen.dart';
+
 
 // Layar asli: tambahkan import-nya seiring selesai, ganti _Placeholder
 // import '../features/auth/landing_screen.dart';
@@ -65,7 +67,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state, shell) => MainShell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [
-            GoRoute(path: '/home', builder: (_, __) => const _Placeholder('Home / Task List')),
+            GoRoute(path: '/home', builder: (_, __) => const TaskListScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', builder: (_, __) => const _Placeholder('Profile')),
