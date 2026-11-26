@@ -7,7 +7,7 @@ import 'package:tracktify/features/auth/landing_screen.dart';
 import 'package:tracktify/features/auth/login_screen.dart';
 import 'package:tracktify/features/auth/sign_up_screen.dart';
 import 'package:tracktify/features/task_list/task_list_screen.dart';
-
+import 'package:tracktify/features/join/join_task_screen.dart';
 
 // Layar asli: tambahkan import-nya seiring selesai, ganti _Placeholder
 // import '../features/auth/landing_screen.dart';
@@ -76,7 +76,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // Layar penuh (di atas bottom nav)
-      GoRoute(path: '/join', builder: (_, __) => const _Placeholder('Join Task')),
+      GoRoute(path: '/join', builder: (_, __) => const JoinTaskScreen()),
       // /manage-task = buat baru, /manage-task?id=xxx = edit
       GoRoute(
         path: '/manage-task',
