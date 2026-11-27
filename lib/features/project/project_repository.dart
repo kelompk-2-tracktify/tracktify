@@ -47,8 +47,13 @@ class ProjectRepository {
   Future<List<Project>> fetchMyProjects() async {
     final rows = await _client
         .from('projects')
-        .select('*, tasks(*), project_members!inner(user_id)')
-        .eq('project_members.user_id', _currentUserId)
+        .select(
+          '*, tasks(*), my_membership:project_members!inner(user_id), '
+          'project_members(project_id, user_id, role, profiles(full_name, avatar_url))',
+        )
+        .eq('my_membership.user_id', _currentUserId)
+        .order('role', ascending: true, referencedTable: 'project_members')
+        .order('user_id', referencedTable: 'project_members')
         .order('created_at', ascending: false);
     return rows.map(Project.fromJson).toList();
   }

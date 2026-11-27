@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../../app/theme.dart';
 import '../models/project.dart';
+import '../models/member.dart';
 import '../models/task.dart';
 import 'progress_ring.dart';
 
@@ -17,36 +19,42 @@ _StatusStyle _styleFor(String status) {
   switch (status) {
     case 'completed':
       return const _StatusStyle(
-          'Completed', Color(0xFFD9F5E3), Color(0xFF1B7A43), Color(0xFF1E8E4A));
+        'Completed',
+        Color(0xFFD9F5E3),
+        Color(0xFF1B7A43),
+        Color(0xFF1E8E4A),
+      );
     case 'cancelled':
       return const _StatusStyle(
-          'Cancelled', Color(0xFFFADADD), Color(0xFFB3261E), Color(0xFFB3261E));
+        'Cancelled',
+        Color(0xFFFADADD),
+        Color(0xFFB3261E),
+        Color(0xFFB3261E),
+      );
     default:
       return const _StatusStyle(
-          'In Progress', Color(0xFFFDEFC3), Color(0xFF8A5A00), AppColors.navy);
+        'In Progress',
+        Color(0xFFFDEFC3),
+        Color(0xFF8A5A00),
+        AppColors.navy,
+      );
   }
 }
 
 class ProjectCard extends StatelessWidget {
   final Project project;
 
-  /// Inisial anggota, contoh ['RP', 'SA', 'DW']. Model Project belum
-  /// punya daftar anggota, jadi diisi dari luar (dummy dulu).
-  final List<String> memberInitials;
   final VoidCallback? onTap;
 
-  const ProjectCard({
-    super.key,
-    required this.project,
-    this.memberInitials = const [],
-    this.onTap,
-  });
+  const ProjectCard({super.key, required this.project, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final style = _styleFor(project.status);
-    final done =
-        project.tasks.where((t) => t.status == TaskStatus.completed).length;
+    final description = project.description?.trim() ?? '';
+    final done = project.tasks
+        .where((t) => t.status == TaskStatus.completed)
+        .length;
     final total = project.tasks.length;
 
     return Material(
@@ -68,42 +76,55 @@ class ProjectCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          project.name,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.text,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 4,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            if (project.description != null)
-                              Text(
-                                project.description!,
-                                style: const TextStyle(
-                                    fontSize: 12, color: Color(0xFF6B7686)),
-                              ),
-                            _StatusChip(style: style),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Text('Tim',
-                            style: TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 6),
-                        _MemberAvatars(initials: memberInitials),
-                      ],
+                    child: Text(
+                      project.name,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.text,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   ProgressRing(value: project.progress, color: style.ring),
+                ],
+              ),
+              Row(
+                children: [
+                  if (description.isNotEmpty) ...[
+                    Flexible(
+                      child: Text(
+                        description,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7686),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                  _StatusChip(style: style),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Tim',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                children: [
+                  for (final member in project.members.take(3))
+                    _MemberAvatar(key: ValueKey(member.userId), member: member),
+                  const CircleAvatar(
+                    radius: 13,
+                    backgroundColor: Color(0xFFD6F5EC),
+                    child: Icon(Icons.add, size: 16, color: Color(0xFF1B7A43)),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -111,24 +132,34 @@ class ProjectCard extends StatelessWidget {
               const SizedBox(height: 10),
               Row(
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 14, color: Color(0xFF6B7686)),
+                  const Icon(
+                    Icons.calendar_today_outlined,
+                    size: 14,
+                    color: Color(0xFF6B7686),
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     project.dueDate == null
                         ? 'Tanpa tenggat'
                         : DateFormat('d MMM yyyy').format(project.dueDate!),
                     style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF6B7686)),
+                      fontSize: 12,
+                      color: Color(0xFF6B7686),
+                    ),
                   ),
                   const Spacer(),
-                  const Icon(Icons.check_box_outlined,
-                      size: 14, color: AppColors.navy),
+                  const Icon(
+                    Icons.check_box_outlined,
+                    size: 14,
+                    color: AppColors.navy,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     '$done/$total Subtugas',
                     style: const TextStyle(
-                        fontSize: 12, color: Color(0xFF6B7686)),
+                      fontSize: 12,
+                      color: Color(0xFF6B7686),
+                    ),
                   ),
                 ],
               ),
@@ -155,37 +186,57 @@ class _StatusChip extends StatelessWidget {
       child: Text(
         style.label,
         style: TextStyle(
-            fontSize: 11, fontWeight: FontWeight.w600, color: style.fg),
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: style.fg,
+        ),
       ),
     );
   }
 }
 
-class _MemberAvatars extends StatelessWidget {
-  final List<String> initials;
-  const _MemberAvatars({required this.initials});
-
-  Widget _circle(String text, Color bg, Color fg) => Container(
-    width: 26,
-    height: 26,
-    margin: const EdgeInsets.only(right: 4),
-    alignment: Alignment.center,
-    decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-    child: Text(text,
-        style: TextStyle(
-            fontSize: 10, fontWeight: FontWeight.w700, color: fg)),
-  );
+class _MemberAvatar extends StatelessWidget {
+  final Member member;
+  const _MemberAvatar({super.key, required this.member});
 
   @override
   Widget build(BuildContext context) {
-    final shown = initials.take(3).toList();
-    return Row(
-      children: [
-        for (final i in shown)
-          _circle(i, const Color(0xFFDCE6FA), AppColors.navy),
-        if (initials.isNotEmpty)
-          _circle('+', const Color(0xFFD6F5EC), const Color(0xFF1B7A43)),
-      ],
+    final name = member.fullName?.trim() ?? '';
+    final words = name.split(RegExp(r'\s+'));
+    final initials = words.length == 1
+        ? name.characters.take(2).toString()
+        : words.first.characters.first + words.last.characters.first;
+    final uri = Uri.tryParse(member.avatarUrl?.trim() ?? '');
+    final hasPhoto =
+        uri != null &&
+        (uri.scheme == 'https' || uri.scheme == 'http') &&
+        uri.host.isNotEmpty;
+    return Semantics(
+      label: name.isEmpty ? 'Anggota' : name,
+      excludeSemantics: true,
+      child: CircleAvatar(
+        radius: 13,
+        backgroundColor: const Color(0xFFDCE6FA),
+        foregroundColor: AppColors.navy,
+        child: ClipOval(
+          child: SizedBox.expand(
+            child: hasPhoto
+                ? Image.network(
+                    uri.toString(),
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => _initialsLabel(initials),
+                  )
+                : _initialsLabel(initials),
+          ),
+        ),
+      ),
     );
   }
+
+  Widget _initialsLabel(String initials) => Center(
+    child: Text(
+      initials.isEmpty ? '?' : initials.toUpperCase(),
+      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700),
+    ),
+  );
 }

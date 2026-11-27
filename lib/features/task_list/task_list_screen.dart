@@ -60,7 +60,8 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
     final q = _query.trim().toLowerCase();
     return all.where((p) {
       final okStatus = _status == 'all' || p.status == _status;
-      final okSearch = q.isEmpty ||
+      final okSearch =
+          q.isEmpty ||
           p.name.toLowerCase().contains(q) ||
           p.tasks.any((t) => t.title.toLowerCase().contains(q));
       return okStatus && okSearch && _matchesTime(p);
@@ -69,8 +70,9 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final all = ref.watch(projectsProvider);
-    final shown = _filter(all);
+    final projects = ref.watch(projectsProvider);
+    final all = projects.asData?.value;
+    final shown = all == null ? const <Project>[] : _filter(all);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -78,8 +80,10 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           children: [
-            const Text('Task List',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
+            const Text(
+              'Task List',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+            ),
             const SizedBox(height: 16),
             TextField(
               onChanged: (v) => setState(() => _query = v),
@@ -103,8 +107,9 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                         selectedColor: AppColors.navy,
                         labelStyle: TextStyle(
                           fontSize: 12,
-                          color:
-                          _status == e.key ? Colors.white : AppColors.text,
+                          color: _status == e.key
+                              ? Colors.white
+                              : AppColors.text,
                         ),
                         onSelected: (_) => setState(() => _status = e.key),
                       ),
@@ -128,8 +133,10 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                       ),
                   ],
                   child: Container(
-                    padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: AppColors.fieldBorder),
@@ -137,16 +144,20 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_timeLabels[_time]!,
-                            style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.w600)),
+                        Text(
+                          _timeLabels[_time]!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const Icon(Icons.keyboard_arrow_down, size: 16),
                       ],
                     ),
                   ),
                 ),
                 const Spacer(),
-                if (all.isNotEmpty)
+                if (all?.isNotEmpty == true)
                   FilledButton.icon(
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.navy,
@@ -155,13 +166,27 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                     ),
                     onPressed: () => context.push('/join'),
                     icon: const Icon(Icons.group_add_outlined, size: 16),
-                    label: const Text('Join Task',
-                        style: TextStyle(fontSize: 12)),
+                    label: const Text(
+                      'Join Task',
+                      style: TextStyle(fontSize: 12),
+                    ),
                   ),
               ],
             ),
             const SizedBox(height: 16),
-            if (all.isEmpty)
+            if (projects.isLoading)
+              const Center(child: CircularProgressIndicator())
+            else if (projects.hasError)
+              Column(
+                children: [
+                  const Text('Daftar proyek gagal dimuat.'),
+                  TextButton(
+                    onPressed: () => ref.invalidate(projectsProvider),
+                    child: const Text('Coba lagi'),
+                  ),
+                ],
+              )
+            else if (all!.isEmpty)
               EmptyTaskState(
                 onCreate: () => context.push('/manage-task'),
                 onJoin: () => context.push('/join'),
@@ -170,8 +195,10 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40),
                 child: Center(
-                  child: Text('Tidak ada task yang cocok',
-                      style: TextStyle(color: Color(0xFF6B7686))),
+                  child: Text(
+                    'Tidak ada task yang cocok',
+                    style: TextStyle(color: Color(0xFF6B7686)),
+                  ),
                 ),
               )
             else
@@ -180,7 +207,6 @@ class _TaskListScreenState extends ConsumerState<TaskListScreen> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: ProjectCard(
                     project: p,
-                    memberInitials: ref.watch(memberInitialsProvider(p.id)),
                     onTap: () => context.push('/project/${p.id}'),
                   ),
                 ),

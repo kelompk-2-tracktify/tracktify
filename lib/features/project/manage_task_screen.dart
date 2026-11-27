@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/theme.dart';
 import '../../core/widgets/primary_button.dart';
+import '../task_list/task_list_providers.dart';
 import 'project_repository.dart';
 
 const _outline = Color(0xFFCBD9EA);
@@ -46,6 +48,7 @@ class _ManageTaskScreenState extends ConsumerState<ManageTaskScreen> {
   ];
   DateTime _dueDate = DateTime(2026, 11, 22);
   bool _showTitleError = false;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -83,25 +86,48 @@ class _ManageTaskScreenState extends ConsumerState<ManageTaskScreen> {
     _newSubtask.clear();
   }
 
-  void _save() {
-    final missingTitle = _title.text.trim().isEmpty;
-    if (missingTitle) {
+  Future<void> _save() async {
+    if (_saving) return;
+    final name = _title.text.trim();
+    if (name.isEmpty) {
       setState(() => _showTitleError = true);
       _titleFocus.requestFocus();
-    } else {
-      FocusScope.of(context).unfocus();
+      _showMessage('Title wajib diisi.');
+      return;
     }
+
+    FocusScope.of(context).unfocus();
+    setState(() => _saving = true);
+    final container = ProviderScope.containerOf(context, listen: false);
+    try {
+      await ref
+          .read(projectRepositoryProvider)
+          .createProject(
+            name: name,
+            description: _description.text,
+            dueDate: _dueDate,
+            memberIds: _selectedMemberIds.toList(),
+            subtasks: List.of(_subtasks),
+          );
+    } catch (_) {
+      if (mounted) {
+        setState(() => _saving = false);
+        _showMessage('Proyek gagal disimpan. Silakan coba lagi.');
+      }
+      return;
+    }
+
+    container.invalidate(projectsProvider);
+    if (!mounted) return;
+    setState(() => _saving = false);
+    _showMessage('Proyek berhasil disimpan.');
+    context.go('/home');
+  }
+
+  void _showMessage(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            missingTitle
-                ? 'Title wajib diisi.'
-                : 'Form valid. Data masih berupa pratinjau.',
-          ),
-        ),
-      );
+      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -318,7 +344,11 @@ class _ManageTaskScreenState extends ConsumerState<ManageTaskScreen> {
               ],
             ),
             const SizedBox(height: 20),
-            PrimaryButton(label: 'Save Task', onPressed: _save),
+            PrimaryButton(
+              label: 'Save Task',
+              loading: _saving,
+              onPressed: _save,
+            ),
           ],
         ),
       ),
