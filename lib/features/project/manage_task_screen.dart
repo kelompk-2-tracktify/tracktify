@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/theme.dart';
 import '../../core/widgets/primary_button.dart';
+import 'project_repository.dart';
 
 const _outline = Color(0xFFCBD9EA);
 const _secondary = Color(0xFF475A74);
@@ -21,20 +23,15 @@ const _fieldDecoration = InputDecoration(
   ),
 );
 
-class ManageTaskScreen extends StatefulWidget {
+class ManageTaskScreen extends ConsumerStatefulWidget {
   const ManageTaskScreen({super.key});
 
   @override
-  State<ManageTaskScreen> createState() => _ManageTaskScreenState();
+  ConsumerState<ManageTaskScreen> createState() => _ManageTaskScreenState();
 }
 
-class _ManageTaskScreenState extends State<ManageTaskScreen> {
-  static const _members = [
-    'Raka Pratama',
-    'Siti Aulia',
-    'Dimas Wijaya',
-    'Nadia Putri',
-  ];
+class _ManageTaskScreenState extends ConsumerState<ManageTaskScreen> {
+  late Future<List<Map<String, dynamic>>> _profiles;
 
   final _title = TextEditingController(text: 'Integrasi Autentikasi Google');
   final _description = TextEditingController(
@@ -42,13 +39,23 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
   );
   final _newSubtask = TextEditingController();
   final _titleFocus = FocusNode();
-  final _selectedMembers = {'Raka Pratama', 'Siti Aulia'};
+  final _selectedMemberIds = <String>{};
   final _subtasks = [
     'Siapkan OAuth Client ID di Google Cloud',
     'Uji alur tautkan & putuskan akun Google',
   ];
   DateTime _dueDate = DateTime(2026, 11, 22);
   bool _showTitleError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _profiles = _fetchProfiles();
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchProfiles() => ref
+      .read(projectRepositoryProvider)
+      .fetchProfiles(excludeCurrentUser: true);
 
   @override
   void dispose() {
@@ -174,45 +181,74 @@ class _ManageTaskScreenState extends State<ManageTaskScreen> {
               children: [
                 const _CardHeader('Team Members', 'Tap to select'),
                 const SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 6,
-                  children: [
-                    for (final member in _members)
-                      FilterChip(
-                        label: Text(member),
-                        selected: _selectedMembers.contains(member),
-                        selectedColor: AppColors.navy,
-                        backgroundColor: Colors.white,
-                        shape: const StadiumBorder(),
-                        showCheckmark: false,
-                        side: BorderSide(
-                          color: _selectedMembers.contains(member)
-                              ? AppColors.navy
-                              : _outline,
-                        ),
-                        padding: EdgeInsets.zero,
-                        labelPadding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                        ),
-                        visualDensity: VisualDensity.compact,
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        labelStyle: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: _selectedMembers.contains(member)
-                              ? Colors.white
-                              : AppColors.text,
-                        ),
-                        onSelected: (selected) => setState(() {
-                          if (selected) {
-                            _selectedMembers.add(member);
-                          } else {
-                            _selectedMembers.remove(member);
-                          }
-                        }),
-                      ),
-                  ],
+                FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _profiles,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState != ConnectionState.done) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return Column(
+                        children: [
+                          const Text('Daftar anggota gagal dimuat.'),
+                          TextButton(
+                            onPressed: () => setState(() {
+                              _profiles = _fetchProfiles();
+                            }),
+                            child: const Text('Coba lagi'),
+                          ),
+                        ],
+                      );
+                    }
+                    final profiles = snapshot.requireData;
+                    if (profiles.isEmpty) {
+                      return const Text(
+                        'Belum ada anggota lain yang dapat dipilih.',
+                      );
+                    }
+                    return Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      children: profiles.map((profile) {
+                        final id = profile['id'] as String;
+                        final name = (profile['full_name'] as String?)?.trim();
+                        final isSelected = _selectedMemberIds.contains(id);
+                        return FilterChip(
+                          key: ValueKey(id),
+                          label: Text(
+                            name == null || name.isEmpty ? 'Tanpa nama' : name,
+                          ),
+                          selected: isSelected,
+                          selectedColor: AppColors.navy,
+                          backgroundColor: Colors.white,
+                          shape: const StadiumBorder(),
+                          showCheckmark: false,
+                          side: BorderSide(
+                            color: isSelected ? AppColors.navy : _outline,
+                          ),
+                          padding: EdgeInsets.zero,
+                          labelPadding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                          ),
+                          visualDensity: VisualDensity.compact,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                          labelStyle: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : AppColors.text,
+                          ),
+                          onSelected: (selected) => setState(() {
+                            if (selected) {
+                              _selectedMemberIds.add(id);
+                            } else {
+                              _selectedMemberIds.remove(id);
+                            }
+                          }),
+                        );
+                      }).toList(),
+                    );
+                  },
                 ),
               ],
             ),

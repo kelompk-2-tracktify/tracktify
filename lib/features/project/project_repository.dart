@@ -13,12 +13,14 @@ class ProjectRepository {
     return user.id;
   }
 
-  Future<List<Map<String, dynamic>>> fetchProfiles() async {
-    return await _client
+  Future<List<Map<String, dynamic>>> fetchProfiles({
+    bool excludeCurrentUser = false,
+  }) async {
+    var query = _client
         .from('profiles')
-        .select('id, full_name, email, avatar_url')
-        .order('full_name')
-        .order('id');
+        .select('id, full_name, email, avatar_url');
+    if (excludeCurrentUser) query = query.neq('id', _currentUserId);
+    return await query.order('full_name').order('id');
   }
 
   /// Mengirim judul subtask sesuai urutan pada form dan mengembalikan UUID proyek.
