@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:tracktify/features/auth/landing_screen.dart';
 import 'package:tracktify/features/auth/login_screen.dart';
 import 'package:tracktify/features/auth/sign_up_screen.dart';
+import 'package:tracktify/features/project/manage_task_screen.dart';
 import 'package:tracktify/features/task_list/task_list_screen.dart';
 
 
@@ -62,12 +63,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/otp', builder: (_, s) => _Placeholder('OTP ${s.extra ?? ''}')),
       GoRoute(path: '/set-password', builder: (_, __) => const _Placeholder('Set New Password')),
 
-      // Layar dengan bottom navigation: Home dan Profile
+      // Layar dengan bottom navigation: Home, Add, dan Profile
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => MainShell(shell: shell),
         branches: [
           StatefulShellBranch(routes: [
             GoRoute(path: '/home', builder: (_, __) => const TaskListScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: '/manage-task', builder: (_, __) => const ManageTaskScreen()),
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: '/profile', builder: (_, __) => const _Placeholder('Profile')),
@@ -77,11 +81,6 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Layar penuh (di atas bottom nav)
       GoRoute(path: '/join', builder: (_, __) => const _Placeholder('Join Task')),
-      // /manage-task = buat baru, /manage-task?id=xxx = edit
-      GoRoute(
-        path: '/manage-task',
-        builder: (_, s) => _Placeholder('Manage Task ${s.uri.queryParameters['id'] ?? ''}'),
-      ),
       GoRoute(
         path: '/project/:id',
         builder: (_, s) => _Placeholder('Project ${s.pathParameters['id']}'),
@@ -97,19 +96,11 @@ class MainShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // shell.currentIndex: 0 = home, 1 = profile  ->  UI index: 0, 2
-    final uiIndex = shell.currentIndex == 0 ? 0 : 2;
     return Scaffold(
       body: shell,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: uiIndex,
-        onDestinationSelected: (i) {
-          if (i == 1) {
-            context.push('/manage-task');
-          } else {
-            shell.goBranch(i == 0 ? 0 : 1);
-          }
-        },
+        selectedIndex: shell.currentIndex,
+        onDestinationSelected: shell.goBranch,
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
           NavigationDestination(icon: Icon(Icons.add_circle_outline), label: 'Add'),
