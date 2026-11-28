@@ -9,18 +9,25 @@ class ProjectRepository {
 
   String get _currentUserId {
     final user = _client.auth.currentUser;
-    if (user == null) throw StateError('Silakan login terlebih dahulu.');
+    if (user == null) throw StateError('Please sign in to continue.');
     return user.id;
   }
 
-  Future<List<Map<String, dynamic>>> fetchProfiles({
-    bool excludeCurrentUser = false,
-  }) async {
-    var query = _client
+  Future<List<Map<String, dynamic>>> searchProfilesByEmail(String query) async {
+    final term = query.trim();
+    if (term.length < 3) return [];
+    final literal = term.replaceAllMapped(
+      RegExp(r'[\\%_*]'),
+      (match) => '\\${match[0]}',
+    );
+    return await _client
         .from('profiles')
-        .select('id, full_name, email, avatar_url');
-    if (excludeCurrentUser) query = query.neq('id', _currentUserId);
-    return await query.order('full_name').order('id');
+        .select('id, full_name, email, avatar_url')
+        .ilike('email', '%$literal%')
+        .neq('id', _currentUserId)
+        .order('email', ascending: true)
+        .order('id', ascending: true)
+        .limit(20);
   }
 
   /// Mengirim judul subtask sesuai urutan pada form dan mengembalikan UUID proyek.

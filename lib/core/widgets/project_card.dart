@@ -86,31 +86,34 @@ class ProjectCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ProgressRing(value: project.progress, color: style.ring),
+                  ProgressRing(
+                    value: project.progress,
+                    color: style.ring,
+                    size: 43.2,
+                  ),
                 ],
               ),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  if (description.isNotEmpty) ...[
-                    Flexible(
-                      child: Text(
-                        description,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF6B7686),
-                        ),
+                  Expanded(
+                    child: Text(
+                      description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B7686),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                  ],
+                  ),
+                  const SizedBox(width: 8),
                   _StatusChip(style: style),
                 ],
               ),
               const SizedBox(height: 12),
               const Text(
-                'Tim',
+                'Team',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
@@ -130,36 +133,48 @@ class ProjectCard extends StatelessWidget {
               const SizedBox(height: 12),
               const Divider(height: 1, color: Color(0xFFE6ECF2)),
               const SizedBox(height: 10),
-              Row(
+              OverflowBar(
+                alignment: MainAxisAlignment.spaceBetween,
+                overflowAlignment: OverflowBarAlignment.end,
+                overflowSpacing: 4,
                 children: [
-                  const Icon(
-                    Icons.calendar_today_outlined,
-                    size: 14,
-                    color: Color(0xFF6B7686),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_outlined,
+                        size: 14,
+                        color: Color(0xFF6B7686),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        project.dueDate == null
+                            ? 'No due date'
+                            : DateFormat('d MMM yyyy').format(project.dueDate!),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7686),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 6),
-                  Text(
-                    project.dueDate == null
-                        ? 'Tanpa tenggat'
-                        : DateFormat('d MMM yyyy').format(project.dueDate!),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7686),
-                    ),
-                  ),
-                  const Spacer(),
-                  const Icon(
-                    Icons.check_box_outlined,
-                    size: 14,
-                    color: AppColors.navy,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    '$done/$total Subtugas',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7686),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check_box_outlined,
+                        size: 14,
+                        color: AppColors.navy,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$done/$total ${total == 1 ? 'subtask' : 'subtasks'}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF6B7686),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -212,7 +227,7 @@ class _MemberAvatar extends StatelessWidget {
         (uri.scheme == 'https' || uri.scheme == 'http') &&
         uri.host.isNotEmpty;
     return Semantics(
-      label: name.isEmpty ? 'Anggota' : name,
+      label: name.isEmpty ? 'Team member' : name,
       excludeSemantics: true,
       child: CircleAvatar(
         radius: 13,
