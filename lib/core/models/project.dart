@@ -1,3 +1,4 @@
+import 'member.dart';
 import 'task.dart';
 
 class Project {
@@ -9,6 +10,7 @@ class Project {
   final String status;
   final String? createdBy;
   final List<Task> tasks; // terisi bila query: select('*, tasks(*)')
+  final List<Member> members;
 
   const Project({
     required this.id,
@@ -19,6 +21,7 @@ class Project {
     this.status = 'in_progress',
     this.createdBy,
     this.tasks = const [],
+    this.members = const [],
   });
 
   /// Progress 0.0 - 1.0, dihitung dari subtask completed (tidak disimpan di DB)
@@ -36,6 +39,9 @@ class Project {
     dueDate: j['due_date'] == null ? null : DateTime.parse(j['due_date']),
     status: j['status'],
     createdBy: j['created_by'],
+    members: (j['project_members'] as List? ?? [])
+        .map((e) => Member.fromJson(e as Map<String, dynamic>))
+        .toList(),
     tasks: (j['tasks'] as List? ?? [])
         .map((e) => Task.fromJson(e as Map<String, dynamic>))
         .toList(),
